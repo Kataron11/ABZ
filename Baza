@@ -1,0 +1,77 @@
+CREATE TABLE ROK(
+id_rok number(4) PRIMARY KEY,
+rok number(4));
+
+CREATE TABLE MIESIAC(
+id_miesiac number(4) PRIMARY KEY,
+miesiac number(4),
+rok_fk CONSTRAINT rok_fk REFERENCES rok(id_rok));
+
+CREATE TABLE DZIEN(
+id_dzien number(4) PRIMARY KEY,
+dzien number(4),
+miesiac_fk CONSTRAINT miesiac_fk REFERENCES miesiac(id_miesiac));
+
+CREATE TABLE PACJENT(
+id_pacjent number(10) PRIMARY KEY,
+imie varchar2(20),
+nazwisko varchar2(20),
+wiek number(3),
+email varchar2(40),
+numer_telefonu varchar(20),
+adres varchar2(40));
+
+CREATE TABLE LEKARZ(
+id_lekarz number(10) PRIMARY KEY,
+imie varchar2(20),
+nazwisko varchar2(20),
+staz number(2));
+
+CREATE TABLE ASYSTENT(
+id_asystent number(10) PRIMARY KEY,
+imie varchar2(20),
+nazwisko varchar2(20));
+
+CREATE TABLE LEK(
+id_lek number(10) PRIMARY KEY,
+nazwa varchar2(20),
+dawka number(10,2));
+
+CREATE TABLE ZABIEG(
+id_zabieg number(10) PRIMARY KEY,
+nazwa varchar(40),
+czas_trwania number(10));
+
+CREATE TABLE POZABIEGOWKA(
+id_pozabiegowka number(10) PRIMARY KEY,
+nazwa varchar(40),
+czas_trwania number(10));
+
+CREATE TABLE WIZYTA(
+id_wizyta number(12) PRIMARY KEY,
+cena number(10,0),
+jakosc number(1),
+ubezpiecznie VARCHAR2(40),
+znizka number(3),
+godzina VARCHAR2(40),
+dzien_fk CONSTRAINT dzien_fk REFERENCES dzien(id_dzien),
+pacjent_fk CONSTRAINT pacjent_fk REFERENCES pacjent(id_pacjent),
+lekarz_fk CONSTRAINT lekarz_fk REFERENCES lekarz(id_lekarz),
+asystent_fk CONSTRAINT asystent_fk REFERENCES asystent(id_asystent),
+lek_fk CONSTRAINT lek_fk REFERENCES lek(id_lek),
+zabieg_fk CONSTRAINT zabieg_fk REFERENCES zabieg(id_zabieg),
+pozabiegowka_fk CONSTRAINT pozabiegowka_fk REFERENCES pozabiegowka(id_pozabiegowka));
+
+
+
+
+drop table rok;
+drop table miesiac;
+drop table dzien;
+drop table pacjent;
+drop table lekarz;
+drop table asystent;
+drop table lek;
+drop table zabieg;
+drop table pozabiegowka;
+drop table wizyta;
