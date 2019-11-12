@@ -1,0 +1,67 @@
+/*Ilość zabiegów każdego lekarza w każdym roku */
+SELECT COUNT(wizyta.id_wizyta) AS "Ilosc zabiegów",zabieg.nazwa, lekarz.imie, lekarz.nazwisko, 
+CASE GROUPING(rok.rok)
+    WHEN 1 THEN 'Calosc pracy'
+    ELSE TO_CHAR(rok.rok)
+END AS "Rok"
+FROM wizyta, zabieg, lekarz, rok, miesiac, dzien
+WHERE wizyta.zabieg_fk=zabieg.id_zabieg
+AND wizyta.dzien_fk=dzien.id_dzien
+AND dzien.miesiac_fk=miesiac.id_miesiac
+AND miesiac.rok_fk=rok.id_rok
+AND wizyta.lekarz_fk= lekarz.id_lekarz
+GROUP BY ROLLUP (zabieg.nazwa, lekarz.imie, lekarz.nazwisko,rok.rok)
+ORDER BY lekarz.imie, lekarz.nazwisko ASC;
+ 
+/*Srednia jakosc asystentów z każdego roku */
+SELECT asystent.imie, asystent.nazwisko, rok.rok,ROUND(AVG(wizyta.jakosc),3) AS "Ocena"
+FROM wizyta, asystent, rok, miesiac, dzien
+WHERE wizyta.asystent_fk = asystent.id_asystent
+AND wizyta.dzien_fk=dzien.id_dzien
+AND dzien.miesiac_fk=miesiac.id_miesiac
+AND miesiac.rok_fk=rok.id_rok
+GROUP BY asystent.imie, asystent.nazwisko, CUBE (asystent.imie, rok.rok)
+HAVING GROUP_ID()=0
+ORDER By rok.rok DESC;
+ 
+/*Przychód za dana wizyte w danym roku. */ 
+SELECT SUM(wizyta.cena) AS "Przychod PLN", zabieg.nazwa, rok.rok,
+CASE GROUPING(miesiac.miesiac)
+    WHEN 1 THEN 'Caly rok'
+    ELSE TO_CHAR(miesiac.miesiac)
+END AS "Miesiac"
+FROM wizyta, zabieg,rok, miesiac, dzien
+WHERE wizyta.zabieg_fk=zabieg.id_zabieg
+AND wizyta.dzien_fk=dzien.id_dzien
+AND dzien.miesiac_fk=miesiac.id_miesiac
+AND miesiac.rok_fk=rok.id_rok
+GROUP BY CUBE (zabieg.nazwa, rok.rok, miesiac.miesiac)
+HAVING GROUP_ID() =0
+ORDER BY zabieg.nazwa, rok.rok, miesiac.miesiac;
+ 
+/*Ilość zabiegów danego pacjenta. */ 
+SELECT COUNT(wizyta.id_wizyta) AS "ILOSC",pacjent.imie, pacjent.nazwisko, 
+CASE GROUPING(zabieg.nazwa)
+    WHEN 1 THEN 'Wszystkie zabiegi'
+    ELSE zabieg.nazwa
+END AS "Zabieg"
+FROM pacjent, zabieg, lek, wizyta
+WHERE wizyta.pacjent_fk = pacjent.id_pacjent
+AND wizyta.zabieg_fk = zabieg.id_zabieg
+AND wizyta.lek_fk = lek.id_lek
+GROUP BY ROLLUP(pacjent.imie, pacjent.nazwisko,zabieg.nazwa )
+ORDER BY pacjent.imie, pacjent.nazwisko;
+
+ 
+ 
+/*Ilość wizyt na odpowiedni godzinę. */
+SELECT COUNT(wizyta.godzina) AS "Ilość wizyt", lekarz.imie, lekarz.nazwisko, 
+CASE GROUPING(wizyta.godzina)
+    WHEN 1 THEN 'Wszystkie wizyty'
+    ELSE wizyta.godzina
+END AS "Wizyta"
+FROM Wizyta, Lekarz
+WHERE wizyta.lekarz_fk = lekarz.id_lekarz
+GROUP BY lekarz.imie,lekarz.nazwisko, GROUPING SETS(lekarz.imie, lekarz.nazwisko, wizyta.godzina)
+HAVING GROUP_ID()=0
+ORDER BY count(wizyta.godzina) DESC
